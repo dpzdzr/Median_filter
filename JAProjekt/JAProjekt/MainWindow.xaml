@@ -1,0 +1,68 @@
+﻿<Window x:Class="JAProjekt.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JAProjekt"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Title="Median Filtering" Height="350" Width="450"
+        WindowStyle="SingleBorderWindow">
+    <Window.Resources>
+        <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
+    </Window.Resources>
+
+
+    <Grid Background="AliceBlue">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+            <!--
+            <Button Content="Compute" Width="120" Command="{Binding ComputeValue}" />
+            -->
+            <Button Content="Wybierz plik" 
+                    HorizontalAlignment="Center"
+                    Height="30" Width="140" 
+                    FontSize="12" 
+                    Command="{Binding BrowseFileCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"
+                    />
+            <Button Content="Filtruj" 
+                    HorizontalAlignment="Center"
+                    Height="30" Width="140" Margin="0,20,0,0" 
+                    FontSize="12" 
+                    Command="{Binding ProcessBitmapCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+            <Label Content="Wybierz liczbę wątków" HorizontalAlignment="Center" FontSize="14"/>
+            <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Width="140" 
+                      ItemsSource="{Binding ThreadOptions}" SelectedItem="{Binding SelectedThreadCount}"
+                      IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+            <Label Content="Wybierz bibliotekę" HorizontalAlignment="Center" Margin="0,20,0,0" FontSize="14"/>
+            <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Width="140" 
+                      ItemsSource="{Binding DllOptions}" SelectedItem="{Binding SelectedDll}"
+                      IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+            <TextBlock Text="Wybrany plik:" Margin="20, 0, 0, 0"> </TextBlock>
+            <TextBlock Text="{Binding SelectedFilePath}" Height="30" TextWrapping="Wrap" Margin="20, 5, 20, 20"/>
+            <!-- <ProgressBar  HorizontalAlignment="Stretch" 
+                          Height="20" Margin="20,10,20,20"
+                          Minimum="0" Maximum="100" 
+                          Value="{Binding Progress}"/>--> 
+        </StackPanel>
+
+    </Grid>
+</Window>
