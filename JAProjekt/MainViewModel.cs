@@ -138,7 +138,7 @@ namespace JAProjekt
 
                 DestinationFilePath = $"{Path.GetDirectoryName(SelectedFilePath)}\\{Path.GetFileNameWithoutExtension(SelectedFilePath)}MF.bmp";
 
-                //LoadedImage = new BitmapImage(new Uri(SelectedFilePath));
+                LoadedImage = LoadImageToDisplay(SelectedFilePath);
             }
         }
 
@@ -192,7 +192,7 @@ namespace JAProjekt
                 BitmapInterop.MergeFragments(bitmapPtr, filteredFragments, SelectedThreadCount, convDestinationFilePath);
                 Marshal.FreeHGlobal(convDestinationFilePath);
 
-                //FilteredImage = new BitmapImage(new Uri(DestinationFilePath));
+                FilteredImage = LoadImageToDisplay(DestinationFilePath);
 
                 FreeAllFragmentsMemory(filteredFragments);
 
@@ -286,6 +286,17 @@ namespace JAProjekt
             }
         }
 
+        public static BitmapImage LoadImageToDisplay(string filePath)
+        {
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.UriSource = new Uri(filePath);
+            image.EndInit();
+            image.Freeze();
+
+            return image;
+        }
         public void ResetFilePathInfo()
         {
             SelectedFilePath = string.Empty;

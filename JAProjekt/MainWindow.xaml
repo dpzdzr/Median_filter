@@ -5,22 +5,21 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JAProjekt"
         mc:Ignorable="d"
-        ResizeMode="CanMinimize"
-        Title="Median Filtering" Height="350" Width="600"
+        ResizeMode="CanResize"
+        Title="Median Filtering" Height="500" Width="800"
         WindowStyle="SingleBorderWindow">
     <Window.Resources>
         <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
     </Window.Resources>
 
-
+    <!--
     <Grid Background="AliceBlue">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-
-       </Grid.RowDefinitions>
+        </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -30,9 +29,7 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-            <!--
-            <Button Content="Compute" Width="120" Command="{Binding ComputeValue}" />
-            -->
+
             <Button Content="Wybierz plik" 
                     HorizontalAlignment="Center"
                     Height="30" Width="140" 
@@ -72,11 +69,64 @@
         <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
             <TextBlock Text="Wybrany plik:" Margin="20, 0, 0, 0"></TextBlock>
             <TextBlock Text="{Binding SelectedFilePath}" Height="30" TextWrapping="Wrap" Margin="20, 5, 20, 20"/>
-            <!-- <ProgressBar  HorizontalAlignment="Stretch" 
+            <ProgressBar  HorizontalAlignment="Stretch" 
                           Height="20" Margin="20,10,20,20"
                           Minimum="0" Maximum="100" 
-                          Value="{Binding Progress}"/>-->
+                          Value="{Binding Progress}"/>
         </StackPanel>
 
+    </Grid>
+ -->
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <GroupBox Header = "Wczytany obraz" Grid.Row="0" Grid.Column="0" Margin="5">
+            <Image Source="{Binding LoadedImage}" Stretch="Uniform"/>
+        </GroupBox>
+
+        <GroupBox Header = "Obraz filtrowany" Grid.Row="0" Grid.Column="1" Margin="5">
+            <Image Source="{Binding FilteredImage}" Stretch="Uniform"/>
+        </GroupBox>
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Vertical" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Button Content="Wczytaj" Width="150" Height="30" Margin="0,0,0,10"
+                    Command="{Binding BrowseFileCommand}"
+                    IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+
+
+                <Button Content="Filtruj" Width="150" Height="30" Margin="0,0,0,5"
+                        Command="{Binding ProcessBitmapCommand}"
+                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+             
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation ="Vertical">
+                <Label Content="Wybierz liczbę wątków" HorizontalAlignment="Center" FontSize="14"/>
+                <ComboBox Width="140" 
+                      ItemsSource="{Binding ThreadOptions}" SelectedItem="{Binding SelectedThreadCount}"
+                      IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+                <Label Content="Wybierz bibliotekę" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14"/>
+                <ComboBox Width="140" Margin="0,0,0,10"
+                      ItemsSource="{Binding DllOptions}" SelectedItem="{Binding SelectedDll}"
+                      IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
