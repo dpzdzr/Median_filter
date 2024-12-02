@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:JAProjekt"
         mc:Ignorable="d"
         ResizeMode="CanMinimize"
-        Title="Median Filtering" Height="350" Width="450"
+        Title="Median Filtering" Height="350" Width="600"
         WindowStyle="SingleBorderWindow">
     <Window.Resources>
         <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
@@ -17,9 +17,14 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+
+       </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
@@ -44,6 +49,7 @@
 
         </StackPanel>
 
+
         <StackPanel Grid.Column="1" VerticalAlignment="Center">
             <Label Content="Wybierz liczbę wątków" HorizontalAlignment="Center" FontSize="14"/>
             <ComboBox HorizontalAlignment="Center" VerticalAlignment="Center" Width="140" 
@@ -55,13 +61,21 @@
                       IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
         </StackPanel>
 
+        <GroupBox Header="Wczytany obraz" Grid.Row="0" Grid.Column="2">
+            <Image Source="{Binding LoadedImage}" Stretch="Uniform"/>
+        </GroupBox>
+
+        <GroupBox Header="Filtrowany obraz" Grid.Row="0" Grid.Column="3">
+            <Image Source="{Binding FilteredImage}" Stretch="Uniform"/>
+        </GroupBox>
+
         <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
-            <TextBlock Text="Wybrany plik:" Margin="20, 0, 0, 0"> </TextBlock>
+            <TextBlock Text="Wybrany plik:" Margin="20, 0, 0, 0"></TextBlock>
             <TextBlock Text="{Binding SelectedFilePath}" Height="30" TextWrapping="Wrap" Margin="20, 5, 20, 20"/>
             <!-- <ProgressBar  HorizontalAlignment="Stretch" 
                           Height="20" Margin="20,10,20,20"
                           Minimum="0" Maximum="100" 
-                          Value="{Binding Progress}"/>--> 
+                          Value="{Binding Progress}"/>-->
         </StackPanel>
 
     </Grid>

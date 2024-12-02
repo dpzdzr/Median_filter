@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace JAProjekt
 {
@@ -17,6 +18,9 @@ namespace JAProjekt
 
         private string _selectedFilePath;
         private string _destinationFilePath;
+        
+        private BitmapImage _loadedImage;
+        private BitmapImage _filteredImage;
 
         private double _progress;
         private bool _isBusy;
@@ -52,6 +56,18 @@ namespace JAProjekt
         public ICommand ComputeValue { get; }
 
         public ICommand ProcessBitmapCommand { get; }
+
+        public BitmapImage LoadedImage
+        {
+            get => _loadedImage;
+            set { _loadedImage = value; OnPropertyChanged(nameof(LoadedImage)); }
+        }
+
+        public BitmapImage FilteredImage
+        {
+            get => _filteredImage;
+            set { _filteredImage = value; OnPropertyChanged(nameof(FilteredImage)); }
+        }
 
         public bool IsBusy
         {
@@ -121,6 +137,8 @@ namespace JAProjekt
                 SelectedFilePath = openFileDialog.FileName;
 
                 DestinationFilePath = $"{Path.GetDirectoryName(SelectedFilePath)}\\{Path.GetFileNameWithoutExtension(SelectedFilePath)}MF.bmp";
+
+                //LoadedImage = new BitmapImage(new Uri(SelectedFilePath));
             }
         }
 
@@ -173,6 +191,8 @@ namespace JAProjekt
                 IntPtr convDestinationFilePath = Marshal.StringToHGlobalAnsi(DestinationFilePath);
                 BitmapInterop.MergeFragments(bitmapPtr, filteredFragments, SelectedThreadCount, convDestinationFilePath);
                 Marshal.FreeHGlobal(convDestinationFilePath);
+
+                //FilteredImage = new BitmapImage(new Uri(DestinationFilePath));
 
                 FreeAllFragmentsMemory(filteredFragments);
 
