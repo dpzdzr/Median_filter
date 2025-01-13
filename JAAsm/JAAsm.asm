@@ -1,18 +1,10 @@
-; x64 parameter passing:
-; rcx - first parameter  (input pointer)  [uint8_t* input]
-; rdx - second parameter (output pointer) [uint8_t* output]
-; r8d - third parameter  (width)
-; r9d - fourth parameter (height)
 .data
 align 16
 shuffle_mask db 1, 2, 3, 2, 3, 4, 3, 5, 5, 0, 0, 0, 0, 0, 0, 0 
-align 16
-window db 9 dup(0)
-
 
 .code
 applyFilter PROC
-    ; Zachowaj rejestry nieulotne (non-volatile)
+    ; Save non-volatile registers
     push rbx
     push rsi
     push rdi
@@ -21,76 +13,69 @@ applyFilter PROC
     push r14
     push r15
     
-    ; Zapisz parametry w rejestrach "w³asnych"
+    ; Setup stack frame
+    push rbp
+    mov rbp, rsp
+    ; Single stack allocation for window buffer (16-byte aligned)
+    sub rsp, 16         ; Allocate 32 bytes to maintain alignment
+    
+    ; Save parameters in registers
     mov r12, rcx        ; input pointer
     mov r13, rdx        ; output pointer
     mov r14, r8         ; width
     mov r15, r9         ; height
-
-    ; Zapamiêtujemy PRAWDZIW¥ szerokoœæ w rsi (potrzebna do offsetu)
-    mov r9, r14
-
-    ; Odcinamy po 1 pikselu na brzegach, by skipowaæ pierwsz¹ i ostatni¹ kolumnê/wiersz
+    mov r9, r14         ; save true width
+    
+    ; Trim edges
     sub r14, 1
     sub r15, 1
     
-    ; Alokacja na stosie (nieu¿ywana tutaj do filtra, ale zostaje)
-    sub rsp, 16
-
     ; y start = 1
     mov ebx, 1
     ; output index
     xor r10, r10
-
 outer_loop:
     cmp ebx, r15d
-    jge done       ; jeœli ebx >= (height - 1), wyjdŸ
-
-    ; x start = 1
-    mov esi, 1
-
+    jge done
+    mov esi, 1          ; x start = 1
 inner_loop:
     cmp esi, r14d
-    jge end_inner_loop  ; jeœli esi >= (width - 1), przejdŸ do kolejnego wiersza
+    jge end_inner_loop
 
-    ; Oblicz przesuniêcie: offset = y * (prawdziwa_szerokosc) + x
-    ; rsi zawiera oryginalne 'width'
+    ; Calculate offset
     mov eax, ebx
-    imul eax, r9d
+    mov edx, r14d
+    inc edx
+    imul eax, edx
     add eax, esi
     mov r8d, eax
-    ; Wczytaj bajt z wejœcia i zapisz do wyjœcia
-    ;movzx  ecx, byte ptr [r12+rax]
-    ;mov    byte ptr [r13+r10], cl
 
-    ;;;;;;;;
+    ; Load pixel data
     mov eax, r8d
-    sub eax, r14d
+    sub eax, r9d
     dec eax
     lea rcx, [r12+rax]
     movdqu xmm0, [rcx]
-
+    
     mov eax, r8d
     dec eax
     lea rcx, [r12+rax]
     movdqu xmm1, [rcx]
-
+    
     mov eax, r8d
-    add eax, r14d
+    add eax, r9d
     dec eax
     lea rcx, [r12+rax]
     movdqu xmm2, [rcx]
 
-    ;pshufb xmm0, xmmword ptr shuffle_mask
-    ;pshufb xmm1, xmmword ptr shuffle_mask
-    ;pshufb xmm2, xmmword ptr shuffle_mask
-
-    lea rcx, window
-
+    ; Store into window buffer on stack
+    lea rcx, [rbp-16]   ; Use stack-allocated buffer
+    
+    ; Store top row
     pextrb byte ptr [rcx], xmm0, 0
     pextrb byte ptr [rcx + 1], xmm0, 1
     pextrb byte ptr [rcx + 2], xmm0, 2
-
+    
     ; Store middle row
     pextrb byte ptr [rcx + 3], xmm1, 0
     pextrb byte ptr [rcx + 4], xmm1, 1
@@ -101,24 +86,49 @@ inner_loop:
     pextrb byte ptr [rcx + 7], xmm2, 1
     pextrb byte ptr [rcx + 8], xmm2, 2
 
- ; Sortowanie tablicy window (bubble sort)
+    ; Sort window
+    push rbx
+    push rsi
+    lea r11, [rbp-16]   ; Use same buffer for sorting
+    mov rbx, 0          ; i = 0
+outer_sort:
+    cmp rbx, 8
+    jge sort_done
+    mov rsi, 0
+inner_sort:
+    cmp rsi, 8
+    jge next_outer
+    movzx rax, byte ptr [r11+rsi]
+    movzx rcx, byte ptr [r11+rsi+1]
+    cmp rax, rcx
+    jbe no_swap
+    mov byte ptr [r11+rsi], cl
+    mov byte ptr [r11+rsi+1], al
+no_swap:
+    inc rsi
+    jmp inner_sort
+next_outer:
+    inc rbx
+    jmp outer_sort
+sort_done:
+    movzx rax, byte ptr [r11+4]
+    mov byte ptr[r13 + r10], al
+    pop rsi
+    pop rbx
 
-    push r11
-    lea r11, window
-    movzx  ecx, byte ptr [r11+4]
-    mov    byte ptr [r13+r10], cl
-    pop r11
-    ;;;;;;;;
     inc r10
     inc esi
     jmp inner_loop
-
 end_inner_loop:
     inc ebx
     jmp outer_loop
     
 done:
-    add rsp, 16         ; przywróæ stos
+    ; Cleanup stack frame properly
+    mov rsp, rbp               ; Restores rbp and rsp
+    pop rbp
+
+    ; Restore non-volatile registers
     pop r15
     pop r14
     pop r13
@@ -128,5 +138,8 @@ done:
     pop rbx
     ret
 applyFilter ENDP
-
 END
+
+
+
+

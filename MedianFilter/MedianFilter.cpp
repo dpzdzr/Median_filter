@@ -33,11 +33,11 @@ public:
 					}
 				}
 
-				//std::sort(window, window + count);
-				//output[outputIndex++] = window[4];
-				int medianIndex = count / 2;
-				std::nth_element(window, window + medianIndex, window + count);
-				output[outputIndex++] = window[medianIndex];
+				std::sort(window, window + count);
+				output[outputIndex++] = window[4];
+				//int medianIndex = count / 2;
+				//std::nth_element(window, window + medianIndex, window + count);
+				//output[outputIndex++] = window[medianIndex];
 			}
 		}
 	}
