@@ -63,7 +63,7 @@ namespace JAProjekt
             set { _loadedImage = value; OnPropertyChanged(nameof(LoadedImage)); }
         }
 
-        public BitmapImage FilteredImage
+        public BitmapImage? FilteredImage
         {
             get => _filteredImage;
             set { _filteredImage = value; OnPropertyChanged(nameof(FilteredImage)); }
@@ -330,10 +330,11 @@ namespace JAProjekt
             BitmapImage image = new BitmapImage();
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
+            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
             image.UriSource = new Uri(filePath);
             image.EndInit();
             image.Freeze();
-
+           
             return image;
         }
         public void ResetFilePathInfo()

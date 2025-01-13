@@ -9,6 +9,7 @@ shuffle_mask db 1, 2, 3, 2, 3, 4, 3, 5, 5, 0, 0, 0, 0, 0, 0, 0
 align 16
 window db 9 dup(0)
 
+
 .code
 applyFilter PROC
     ; Zachowaj rejestry nieulotne (non-volatile)
@@ -59,11 +60,11 @@ inner_loop:
     add eax, esi
     mov r8d, eax
     ; Wczytaj bajt z wejœcia i zapisz do wyjœcia
-    movzx  ecx, byte ptr [r12+rax]
-    mov    byte ptr [r13+r10], cl
+    ;movzx  ecx, byte ptr [r12+rax]
+    ;mov    byte ptr [r13+r10], cl
 
     ;;;;;;;;
-        mov eax, r8d
+    mov eax, r8d
     sub eax, r14d
     dec eax
     lea rcx, [r12+rax]
@@ -80,11 +81,11 @@ inner_loop:
     lea rcx, [r12+rax]
     movdqu xmm2, [rcx]
 
-    pshufb xmm0, xmmword ptr shuffle_mask
-    pshufb xmm1, xmmword ptr shuffle_mask
-    pshufb xmm2, xmmword ptr shuffle_mask
+    ;pshufb xmm0, xmmword ptr shuffle_mask
+    ;pshufb xmm1, xmmword ptr shuffle_mask
+    ;pshufb xmm2, xmmword ptr shuffle_mask
 
-    lea rcx, offset window
+    lea rcx, window
 
     pextrb byte ptr [rcx], xmm0, 0
     pextrb byte ptr [rcx + 1], xmm0, 1
@@ -100,28 +101,13 @@ inner_loop:
     pextrb byte ptr [rcx + 7], xmm2, 1
     pextrb byte ptr [rcx + 8], xmm2, 2
 
-    mov rcx, 8
-sort_outer:
-    xor rdi, rdi
-sort_inner:
-    lea rbx, offset window
-    mov al, byte ptr [rbx + rdi]
-    mov ah, byte ptr [rbx + rdi + 1]
-    cmp al, ah
-    jle no_swap
-    mov byte ptr [rbx + rdi], ah
-    mov byte ptr [rbx + rdi + 1], al
-no_swap:
-    inc rdi
-    mov r11, 8
-    sub r11, rcx
-    cmp rdi, r11
-    jl sort_inner
-    dec rcx
-    jnz sort_outer
+ ; Sortowanie tablicy window (bubble sort)
 
-    mov al, byte ptr [rbx+4]
-    mov [r13 + r10], al
+    push r11
+    lea r11, window
+    movzx  ecx, byte ptr [r11+4]
+    mov    byte ptr [r13+r10], cl
+    pop r11
     ;;;;;;;;
     inc r10
     inc esi
