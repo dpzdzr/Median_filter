@@ -1,21 +1,146 @@
-
-
+; x64 parameter passing:
+; rcx - first parameter  (input pointer)  [uint8_t* input]
+; rdx - second parameter (output pointer) [uint8_t* output]
+; r8d - third parameter  (width)
+; r9d - fourth parameter (height)
 .data
-count dword 0
+align 16
+shuffle_mask db 1, 2, 3, 2, 3, 4, 3, 5, 5, 0, 0, 0, 0, 0, 0, 0 
+align 16
+window db 9 dup(0)
 
 .code
-MyProc1 proc
-add RCX, RDX
-mov RAX, RCX
-ret
-MyProc1 endp
+applyFilter PROC
+    ; Zachowaj rejestry nieulotne (non-volatile)
+    push rbx
+    push rsi
+    push rdi
+    push r12
+    push r13
+    push r14
+    push r15
+    
+    ; Zapisz parametry w rejestrach "w³asnych"
+    mov r12, rcx        ; input pointer
+    mov r13, rdx        ; output pointer
+    mov r14, r8         ; width
+    mov r15, r9         ; height
 
-MedianFiltering proc
+    ; Zapamiêtujemy PRAWDZIW¥ szerokoœæ w rsi (potrzebna do offsetu)
+    mov r9, r14
 
-mov rbx, [rdi + 0]
+    ; Odcinamy po 1 pikselu na brzegach, by skipowaæ pierwsz¹ i ostatni¹ kolumnê/wiersz
+    sub r14, 1
+    sub r15, 1
+    
+    ; Alokacja na stosie (nieu¿ywana tutaj do filtra, ale zostaje)
+    sub rsp, 16
 
-MedianFiltering endp
+    ; y start = 1
+    mov ebx, 1
+    ; output index
+    xor r10, r10
 
+outer_loop:
+    cmp ebx, r15d
+    jge done       ; jeœli ebx >= (height - 1), wyjdŸ
 
-end
+    ; x start = 1
+    mov esi, 1
 
+inner_loop:
+    cmp esi, r14d
+    jge end_inner_loop  ; jeœli esi >= (width - 1), przejdŸ do kolejnego wiersza
+
+    ; Oblicz przesuniêcie: offset = y * (prawdziwa_szerokosc) + x
+    ; rsi zawiera oryginalne 'width'
+    mov eax, ebx
+    imul eax, r9d
+    add eax, esi
+    mov r8d, eax
+    ; Wczytaj bajt z wejœcia i zapisz do wyjœcia
+    movzx  ecx, byte ptr [r12+rax]
+    mov    byte ptr [r13+r10], cl
+
+    ;;;;;;;;
+        mov eax, r8d
+    sub eax, r14d
+    dec eax
+    lea rcx, [r12+rax]
+    movdqu xmm0, [rcx]
+
+    mov eax, r8d
+    dec eax
+    lea rcx, [r12+rax]
+    movdqu xmm1, [rcx]
+
+    mov eax, r8d
+    add eax, r14d
+    dec eax
+    lea rcx, [r12+rax]
+    movdqu xmm2, [rcx]
+
+    pshufb xmm0, xmmword ptr shuffle_mask
+    pshufb xmm1, xmmword ptr shuffle_mask
+    pshufb xmm2, xmmword ptr shuffle_mask
+
+    lea rcx, offset window
+
+    pextrb byte ptr [rcx], xmm0, 0
+    pextrb byte ptr [rcx + 1], xmm0, 1
+    pextrb byte ptr [rcx + 2], xmm0, 2
+
+    ; Store middle row
+    pextrb byte ptr [rcx + 3], xmm1, 0
+    pextrb byte ptr [rcx + 4], xmm1, 1
+    pextrb byte ptr [rcx + 5], xmm1, 2
+    
+    ; Store bottom row
+    pextrb byte ptr [rcx + 6], xmm2, 0
+    pextrb byte ptr [rcx + 7], xmm2, 1
+    pextrb byte ptr [rcx + 8], xmm2, 2
+
+    mov rcx, 8
+sort_outer:
+    xor rdi, rdi
+sort_inner:
+    lea rbx, offset window
+    mov al, byte ptr [rbx + rdi]
+    mov ah, byte ptr [rbx + rdi + 1]
+    cmp al, ah
+    jle no_swap
+    mov byte ptr [rbx + rdi], ah
+    mov byte ptr [rbx + rdi + 1], al
+no_swap:
+    inc rdi
+    mov r11, 8
+    sub r11, rcx
+    cmp rdi, r11
+    jl sort_inner
+    dec rcx
+    jnz sort_outer
+
+    mov al, byte ptr [rbx+4]
+    mov [r13 + r10], al
+    ;;;;;;;;
+    inc r10
+    inc esi
+    jmp inner_loop
+
+end_inner_loop:
+    inc ebx
+    jmp outer_loop
+    
+done:
+    add rsp, 16         ; przywróæ stos
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop rdi
+    pop rsi
+    pop rbx
+    ret
+applyFilter ENDP
+
+END

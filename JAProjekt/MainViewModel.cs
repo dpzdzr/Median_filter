@@ -48,7 +48,7 @@ namespace JAProjekt
             SelectedDll = dlls[0];
 
             BrowseFileCommand = new RelayCommand(_ => OpenFileBrowser());
-            ComputeValue = new RelayCommand(_ => computeValue());
+            //ComputeValue = new RelayCommand(_ => computeValue());
             ProcessBitmapCommand = new RelayCommand(async _ => await ProcessBitmap());
         }
 
@@ -123,11 +123,11 @@ namespace JAProjekt
             set { _selectedDll = value; OnPropertyChanged(nameof(SelectedDll)); }
         }
 
-        public void computeValue()
-        {
-            _computedValue = AsmInterop.MyProc1(5, 8);
-            MessageBox.Show(_computedValue.ToString());
-        }
+        //public void computeValue()
+        //{
+        //    _computedValue = AsmInterop.MyProc1(5, 8);
+        //    MessageBox.Show(_computedValue.ToString());
+        //}
 
         public void OpenFileBrowser()
         {
@@ -139,6 +139,7 @@ namespace JAProjekt
                 DestinationFilePath = $"{Path.GetDirectoryName(SelectedFilePath)}\\{Path.GetFileNameWithoutExtension(SelectedFilePath)}MF.bmp";
 
                 LoadedImage = LoadImageToDisplay(SelectedFilePath);
+                FilteredImage = null;
             }
         }
 
@@ -185,7 +186,7 @@ namespace JAProjekt
                 }
                 else if (SelectedDll == "ASM")
                 {
-
+                    filteredFragments = await ProcessFragmentsAsyncASM(fragments);
                 }
 
                 IntPtr convDestinationFilePath = Marshal.StringToHGlobalAnsi(DestinationFilePath);
@@ -208,6 +209,15 @@ namespace JAProjekt
         private static async Task<ProcessedFragment[]> ProcessFragmentsAsync(ProcessedFragment[] fragments)
         {
             var tasks = fragments.Select(fragment => Task.Run(() => ApplyMedianFilterToFragment(fragment))).ToArray();
+
+            var filteredFragments = await Task.WhenAll(tasks);
+
+            return filteredFragments;
+        }
+
+        private static async Task<ProcessedFragment[]> ProcessFragmentsAsyncASM(ProcessedFragment[] fragments)
+        {
+            var tasks = fragments.Select(fragment => Task.Run(() => ApplyMedianFilterToFragmentASM(fragment))).ToArray();
 
             var filteredFragments = await Task.WhenAll(tasks);
 
@@ -242,11 +252,40 @@ namespace JAProjekt
 
         }
 
+        public static IntPtr FilterChannelASM(IntPtr channelData, uint width, uint height)
+        {
+            int size = (int)(width * height);
+            IntPtr outputPtr = Marshal.AllocHGlobal(size);
+
+            AsmInterop.applyFilter(channelData, outputPtr, width, height);
+
+            return outputPtr;
+
+        }
+
         public static ProcessedFragment ApplyMedianFilterToFragment(ProcessedFragment fragment)
         {
             IntPtr filteredBluePtr = FilterChannel(fragment.Blue, fragment.Width, fragment.Height);
             IntPtr filteredGreenPtr = FilterChannel(fragment.Green, fragment.Width, fragment.Height);
             IntPtr filteredRedPtr = FilterChannel(fragment.Red, fragment.Width, fragment.Height);
+
+            return new ProcessedFragment
+            {
+                Blue = filteredBluePtr,
+                Green = filteredGreenPtr,
+                Red = filteredRedPtr,
+                StartRow = fragment.StartRow,
+                EndRow = fragment.EndRow,
+                Width = fragment.Width - 2,
+                Height = fragment.Height - 2,
+            };
+        }
+
+        public static ProcessedFragment ApplyMedianFilterToFragmentASM(ProcessedFragment fragment)
+        {
+            IntPtr filteredBluePtr = FilterChannelASM(fragment.Blue, fragment.Width, fragment.Height);
+            IntPtr filteredGreenPtr = FilterChannelASM(fragment.Green, fragment.Width, fragment.Height);
+            IntPtr filteredRedPtr = FilterChannelASM(fragment.Red, fragment.Width, fragment.Height);
 
             return new ProcessedFragment
             {

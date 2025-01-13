@@ -9,12 +9,9 @@ namespace JAProjekt
 {
     class AsmInterop
     {
-        private const string DllName = @"C:\Users\Daniel\OneDrive - Politechnika Śląska\sem5\ja\projekt\JAProjekt\x64\Debug\JAAsm.dll";
+        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Debug\JAAsm.dll";
 
-        [DllImport(DllName)]
-        public static extern int MyProc1(int a, int b);
-
-        [DllImport(DllName)]
-        public static extern IntPtr MedianFiltering(IntPtr fragment, IntPtr output);
+        [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void applyFilter(IntPtr fragment, IntPtr output, uint width, uint height);
     }
 }

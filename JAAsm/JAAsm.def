@@ -1,3 +1,2 @@
 LIBRARY JAAsm
-EXPORTS MyProc1
-EXPORTS MedianFiltering
+EXPORTS applyFilter
