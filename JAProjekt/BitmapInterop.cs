@@ -16,7 +16,7 @@ namespace JAProjekt
 
     class BitmapInterop
     {
-        private const string DllName = @"C:\Users\Daniel\OneDrive - Politechnika Śląska\sem5\ja\projekt\JAProjekt\x64\Debug\Bitmap.dll";
+        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Release\Bitmap.dll";
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateBitmap(string fileName);

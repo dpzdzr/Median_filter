@@ -1,10 +1,15 @@
-.data
-align 16
-shuffle_mask db 1, 2, 3, 2, 3, 4, 3, 5, 5, 0, 0, 0, 0, 0, 0, 0 
+; Median Filter Implementation in x64 Assembly
+; This procedure applies a 3x3 median filter to 
+; a single RGB channel of the image fragment
+; Input parameters:
+; rcx - input image pointer
+; rdx - output image pointer
+; r8  - image width
+; r9  - image height
 
 .code
 applyFilter PROC
-    ; Save non-volatile registers
+    ; Preserve non-volatile registers
     push rbx
     push rsi
     push rdi
@@ -14,10 +19,11 @@ applyFilter PROC
     push r15
     
     ; Setup stack frame
-    push rbp
-    mov rbp, rsp
-    ; Single stack allocation for window buffer (16-byte aligned)
-    sub rsp, 16         ; Allocate 32 bytes to maintain alignment
+    push rbp            ; save old base pointer
+    mov rbp, rsp        ; establish new base pointer
+
+    ; Stack allocation for window buffer (16-byte aligned)
+    sub rsp, 16         ; allocate 16 bytes to maintain alignment
     
     ; Save parameters in registers
     mov r12, rcx        ; input pointer
@@ -27,26 +33,26 @@ applyFilter PROC
     mov r9, r14         ; save true width
     
     ; Trim edges
-    sub r14, 1
-    sub r15, 1
+    sub r14, 1          ; trim one column (width)
+    sub r15, 1          ; trim one row (height)
     
-    ; y start = 1
-    mov ebx, 1
-    ; output index
-    xor r10, r10
-outer_loop:
-    cmp ebx, r15d
-    jge done
-    mov esi, 1          ; x start = 1
-inner_loop:
-    cmp esi, r14d
-    jge end_inner_loop
+    mov ebx, 1          ; initilize row counter (starts at 1, so skips edge on the left)
+    xor r10, r10        ; output buffer index (starts at 0)
 
-    ; Calculate offset
-    mov eax, ebx
-    mov edx, r14d
-    inc edx
+outer_loop:
+    cmp ebx, r15d       ; check if all rows (excluding edges) are processed
+    jge done            ; exit if done
+    mov esi, 1          ; initilize column counter (starts at 1, skips the edges)
+inner_loop:
+    cmp esi, r14d       ; check if all columns in the row are processed
+    jge end_inner_loop  ; exit inner loop if done
+
+    ; Calculate the current pixel offset in the 1D array representation
+    mov eax, ebx        ; eax = current row
+    mov edx, r14d       ; edx = trimmed width
+    inc edx             ; edx = actual witdh
     imul eax, edx
+    ;imul eax, r9d
     add eax, esi
     mov r8d, eax
 
@@ -139,7 +145,6 @@ done:
     ret
 applyFilter ENDP
 END
-
 
 
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -25,6 +26,10 @@ namespace JAProjekt
         private double _progress;
         private bool _isBusy;
 
+        private string _executionTime;
+
+        private Stopwatch _stopwatch;
+
         int _computedValue;
 
         public MainViewModel()
@@ -47,6 +52,8 @@ namespace JAProjekt
             DllOptions = dlls;
             SelectedDll = dlls[0];
 
+            MyStopwatch = new Stopwatch();
+
             BrowseFileCommand = new RelayCommand(_ => OpenFileBrowser());
             //ComputeValue = new RelayCommand(_ => computeValue());
             ProcessBitmapCommand = new RelayCommand(async _ => await ProcessBitmap());
@@ -57,6 +64,11 @@ namespace JAProjekt
 
         public ICommand ProcessBitmapCommand { get; }
 
+        public Stopwatch MyStopwatch 
+        { 
+            get => _stopwatch; 
+            set { _stopwatch = value; OnPropertyChanged(nameof(Stopwatch)); }
+        }
         public BitmapImage LoadedImage
         {
             get => _loadedImage;
@@ -123,6 +135,12 @@ namespace JAProjekt
             set { _selectedDll = value; OnPropertyChanged(nameof(SelectedDll)); }
         }
 
+        public string ExecutionTime
+        {
+            get => _executionTime;
+            set { _executionTime = value; OnPropertyChanged(nameof(ExecutionTime)); }
+        }
+
         //public void computeValue()
         //{
         //    _computedValue = AsmInterop.MyProc1(5, 8);
@@ -168,6 +186,9 @@ namespace JAProjekt
 
             try
             {
+                MyStopwatch.Restart();
+
+
                 IntPtr fragmentsPtr = BitmapInterop.GetProcessedFragments(bitmapPtr, SelectedThreadCount);
 
                 ProcessedFragment[] fragments = new ProcessedFragment[SelectedThreadCount];
@@ -201,8 +222,10 @@ namespace JAProjekt
             finally
             {
                 BitmapInterop.DestroyBitmap(bitmapPtr);
-                ResetFilePathInfo();
+                //ResetFilePathInfo();
                 IsBusy = false;
+                MyStopwatch.Stop();
+                ExecutionTime = MyStopwatch.ElapsedMilliseconds.ToString() + " ms";
             }
         }
 
