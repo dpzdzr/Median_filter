@@ -8,6 +8,17 @@
 ; r9  - image height
 
 .code
+compare_swap MACRO offset1, offset2
+    LOCAL no_swap
+    movzx rax, byte ptr[r11+offset1]
+    movzx rcx, byte ptr[r11+offset2]
+    cmp al, cl
+    jbe no_swap
+    mov byte ptr[r11 + offset1], cl
+    mov byte ptr [r11 + offset2], al
+no_swap:
+ENDM
+
 applyFilter PROC
     ; Preserve non-volatile registers
     push rbx
@@ -37,25 +48,23 @@ applyFilter PROC
     sub r15, 1          ; trim one row (height)
     
     mov ebx, 1          ; initilize row counter (starts at 1, so skips edge on the left)
-    xor r10, r10        ; output buffer index (starts at 0)
 
 outer_loop:
     cmp ebx, r15d       ; check if all rows (excluding edges) are processed
     jge done            ; exit if done
     mov esi, 1          ; initilize column counter (starts at 1, skips the edges)
 
+    ; Calculate the first pixel offset in the 1D array representation
+    mov eax, ebx
+    mov edx, r9d
+    imul eax, edx
+    mov r8d, eax
+
 inner_loop:
     cmp esi, r14d       ; check if all columns in the row are processed
     jge end_inner_loop  ; exit inner loop if done
 
-    ; Calculate the current pixel offset in the 1D array representation
-    mov eax, ebx        ; eax = current row
-    mov edx, r14d       ; edx = trimmed width
-    inc edx             ; edx = actual witdh
-    imul eax, edx       ; eeax = actual width *  row
-    ;imul eax, r9d
-    add eax, esi        ; eax = actual width * row + column
-    mov r8d, eax        ; r8d = current pixel offset
+    inc r8d              ; increment the input pixel offset
 
     ; Load the 3x3 window around the current pixel
 
@@ -100,42 +109,53 @@ inner_loop:
 
     ; Sort window
     ; Save rbx and rsi for the sorting routine
-    push rbx
-    push rsi
-
     lea r11, [rbp-16]   ; address of the window buffer for sorting
-    mov rbx, 0          ; outer loop counter (i = 0)
-outer_sort:
-    cmp rbx, 8          ; Check if sorting is complete
-    jge sort_done       ; exit if sorted
-    mov rsi, 0          ; inner loop counter (j = 0)
+    
+        ; Pierwsza warstwa
+    compare_swap 0, 3
+    compare_swap 1, 7
+    compare_swap 2, 5
+    compare_swap 4, 8
 
-inner_sort:
-    cmp rsi, 8          ; compare all adjacent pairs in the window
-    jge next_outer      ; exit inner loop if done
-    movzx rax, byte ptr [r11+rsi]       ; load current element
-    movzx rcx, byte ptr [r11+rsi+1]     ; load next element
-    cmp rax, rcx        ; compare elements
-    jbe no_swap         ; skip if already sorted
-    mov byte ptr [r11+rsi], cl          ; swap elements if needed
-    mov byte ptr [r11+rsi+1], al
+    ; Druga warstwa
+    compare_swap 0, 7
+    compare_swap 2, 4
+    compare_swap 3, 8
+    compare_swap 5, 6
 
-no_swap:
-    inc rsi             ; increment inner loop counter
-    jmp inner_sort
+    ; Trzecia warstwa
+    compare_swap 0, 2
+    compare_swap 1, 3
+    compare_swap 4, 5
+    compare_swap 7, 8
 
-next_outer:
-    inc rbx             ; increment outer loop counter
-    jmp outer_sort
+    ; Czwarta warstwa
+    compare_swap 1, 4
+    compare_swap 3, 6
+    compare_swap 5, 7
 
-sort_done:
-    movzx rax, byte ptr [r11+4]         ; load the median value (5th element)
-    mov byte ptr[r13 + r10], al         ; write median to the output buffer
-    pop rsi             ; restore saved registers
-    pop rbx
+    ; Pi¹ta warstwa
+    compare_swap 0, 1
+    compare_swap 2, 4
+    compare_swap 3, 5
+    compare_swap 6, 8
+
+    ; Szósta warstwa
+    compare_swap 2, 3
+    compare_swap 4, 5
+    compare_swap 6, 7
+
+    ; Siódma warstwa
+    compare_swap 1, 2
+    compare_swap 3, 4
+    compare_swap 5, 6
+
+    movzx rax, byte ptr [r11+4]
+    mov byte ptr[r13], al         ; write median to the output buffer
         
-    inc r10             ; increment the output buffer index
+    inc r13             ; increment the output buffer index
     inc esi             ; increment column counter
+
     jmp inner_loop
 
 end_inner_loop:
