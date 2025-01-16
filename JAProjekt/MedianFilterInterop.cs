@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 
 namespace JAProjekt
 {
-   class MedianFilterInterop
+    class MedianFilterInterop
     {
+
+#if DEBUG
+        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Debug\MedianFilter.dll";
+#else
         private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Release\MedianFilter.dll";
+#endif
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void ApplyMedianFilter(IntPtr input, IntPtr output, uint width, uint height);

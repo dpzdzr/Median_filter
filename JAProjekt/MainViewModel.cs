@@ -19,7 +19,7 @@ namespace JAProjekt
 
         private string _selectedFilePath;
         private string _destinationFilePath;
-        
+
         private BitmapImage _loadedImage;
         private BitmapImage _filteredImage;
 
@@ -64,9 +64,9 @@ namespace JAProjekt
 
         public ICommand ProcessBitmapCommand { get; }
 
-        public Stopwatch MyStopwatch 
-        { 
-            get => _stopwatch; 
+        public Stopwatch MyStopwatch
+        {
+            get => _stopwatch;
             set { _stopwatch = value; OnPropertyChanged(nameof(Stopwatch)); }
         }
         public BitmapImage LoadedImage
@@ -163,7 +163,7 @@ namespace JAProjekt
 
         public async Task ProcessBitmap()
         {
-         //   Progress = 0;
+            //   Progress = 0;
             IsBusy = true;
 
             if (string.IsNullOrEmpty(DestinationFilePath))
@@ -184,10 +184,17 @@ namespace JAProjekt
                 return;
             }
 
+            if (!BitmapInterop.CheckIfProperNumOfThreads(bitmapPtr, SelectedThreadCount))
+            {
+                MessageBox.Show("Wybrana liczba wątków nie może być większa od wysokości obrazu wyrażonej w pikselach", "Niepoprawna liczba wątków",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                IsBusy = false;
+                return;
+            }
+
             try
             {
                 MyStopwatch.Restart();
-
 
                 IntPtr fragmentsPtr = BitmapInterop.GetProcessedFragments(bitmapPtr, SelectedThreadCount);
 
@@ -357,7 +364,7 @@ namespace JAProjekt
             image.UriSource = new Uri(filePath);
             image.EndInit();
             image.Freeze();
-           
+
             return image;
         }
         public void ResetFilePathInfo()
@@ -371,4 +378,3 @@ namespace JAProjekt
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
-

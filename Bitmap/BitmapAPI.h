@@ -19,6 +19,8 @@ extern "C" {
     DLL_API void DestroyBitmap(Bitmap* bitmap);
     DLL_API ProcessedFragment* GetProcessedFragments(Bitmap* bitmap, int numOfFragments);
     DLL_API void MergeFragments(Bitmap* bitmap, ProcessedFragment* fagments, int numOfFragments, const char* filePath);
+    DLL_API bool CheckIf24Bit(Bitmap* bitmap);
+    DLL_API bool CheckIfProperNumOfThreads(Bitmap* bitmap, int numOfThreads);
 }
 
 #endif //BITMAPAPI_H

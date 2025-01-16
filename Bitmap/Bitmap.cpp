@@ -33,6 +33,12 @@ public:
 		return 24 == loader.getBitCount();
 	}
 
+	bool checkIfProperNumOfThreads(int numOfThreads)
+	{
+		uint32_t num = static_cast<uint32_t>(numOfThreads);
+		return num <= loader.getHeight();
+	}
+
 	// BitmapManipulator getManipulator() const { return manipulator; }
 	// BitmapLoader getLoader() const { return loader; }
 	// BitmapSplitter &getSplitter() { return *splitter; }
@@ -54,19 +60,27 @@ private:
 };
 
 extern "C" {
-	DLL_API Bitmap* CreateBitmap(const char* fileName) {
+	DLL_API Bitmap* CreateBitmap(const char* fileName) 
+	{
 		return new Bitmap(fileName);
 	}
 
-	DLL_API void DestroyBitmap(Bitmap* bitmap) {
+	DLL_API void DestroyBitmap(Bitmap* bitmap) 
+	{
 		delete bitmap;
 	}
 
-	DLL_API bool CheckIf24Bit(Bitmap*bitmap) {
+	DLL_API bool CheckIf24Bit(Bitmap* bitmap) {
 		return bitmap->checkIf24Bit();
 	}
 
-	DLL_API ProcessedFragment* GetProcessedFragments(Bitmap* bitmap, int numOfFragments) {
+	DLL_API bool CheckIfProperNumOfThreads(Bitmap* bitmap, int numOfThreads)
+	{
+		return bitmap->checkIfProperNumOfThreads(numOfThreads);
+	}
+
+	DLL_API ProcessedFragment* GetProcessedFragments(Bitmap* bitmap, int numOfFragments) 
+	{
 		return bitmap->getProcessedFragments(numOfFragments);
 	}
 
