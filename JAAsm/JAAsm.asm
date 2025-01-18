@@ -64,10 +64,8 @@ inner_loop:
     ; Load the 3x3 window around the current pixel
     ; Top row
     movdqu xmm0, [rdi]  ; load data into xmm0
-    
     ; Middle row
     movdqu xmm1, [rdi+r9]  ; load data into xmm1
-    
     ; Bottom row
     movdqu xmm2, [rdi+2*r9]  ; load data into xmm2
 
@@ -104,10 +102,7 @@ inner_loop:
     pextrb r14, xmm2, 1
     pextrb r15, xmm2, 2
 
-    ; Sort window
-    ; Save rbx and rsi for the sorting routine
-    ;lea r11, [rbp-16]   ; address of the window buffer for sorting
-    
+    ; Sort window using hardcoded optimal sorting network for 9 elements
     ; First layer
     compare_swap rbx, r10     ; 0, 3
     compare_swap r8, r15      ; 1, 7
