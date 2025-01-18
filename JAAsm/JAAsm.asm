@@ -8,14 +8,16 @@
 ; r9  - image height
 
 .code
-compare_swap MACRO offset1, offset2
+; Macro for sorting network
+; compares two given bytes and swaps them if needed
+compare_swap MACRO reg1, reg2
     LOCAL no_swap
-    movzx rax, byte ptr[r11+offset1]
-    movzx rcx, byte ptr[r11+offset2]
+    mov rax, reg1
+    mov rcx, reg2
     cmp al, cl
     jbe no_swap
-    mov byte ptr[r11 + offset1], cl
-    mov byte ptr [r11 + offset2], al
+    mov reg1, rcx
+    mov reg2, rax
 no_swap:
 ENDM
 
@@ -46,120 +48,128 @@ applyFilter PROC
     ; Trim edges
     sub r14, 1          ; trim one column (width)
     sub r15, 1          ; trim one row (height)
-    
-    mov ebx, 1          ; initilize row counter (starts at 1, so skips edge on the left)
 
+    mov rbx, 1          ; initilize row counter (starts at 1, so skips edge on the left)
 outer_loop:
-    cmp ebx, r15d       ; check if all rows (excluding edges) are processed
+    cmp rbx, r15        ; check if all rows (excluding edges) are processed
     jge done            ; exit if done
     mov esi, 1          ; initilize column counter (starts at 1, skips the edges)
 
-    ; Calculate the first pixel offset in the 1D array representation
-    mov eax, ebx
-    mov edx, r9d
-    imul eax, edx
-    mov r8d, eax
+    mov rdi, r12        ; move current row pointer for inner looping
 
 inner_loop:
     cmp esi, r14d       ; check if all columns in the row are processed
     jge end_inner_loop  ; exit inner loop if done
 
-    inc r8d              ; increment the input pixel offset
-
     ; Load the 3x3 window around the current pixel
-
     ; Top row
-    mov eax, r8d        ; copy current pixel position to eax
-    sub eax, r9d        ; move to the row above
-    dec eax             ; move one column left
-    lea rcx, [r12+rax]  ; addres of the top-left pixel
-    movdqu xmm0, [rcx]  ; load data into xmm0
+    movdqu xmm0, [rdi]  ; load data into xmm0
     
     ; Middle row
-    mov eax, r8d        ; copy current pixel position to eax        
-    dec eax             ; move one column left
-    lea rcx, [r12+rax]  ; address of the middle-left pixel
-    movdqu xmm1, [rcx]  ; load data into xmm1
+    movdqu xmm1, [rdi+r9]  ; load data into xmm1
     
     ; Bottom row
-    mov eax, r8d        ; copy current pixel position to eax
-    add eax, r9d        ; move to the row below
-    dec eax             ; move one column left
-    lea rcx, [r12+rax]  ; address of the bottom-left pixel
-    movdqu xmm2, [rcx]  ; load data into xmm2
+    movdqu xmm2, [rdi+2*r9]  ; load data into xmm2
 
     ; Store the 3x3 window into a stack-allocated buffer
     lea rcx, [rbp-16]   ; address of the window buffer on the stack
     
     ; Extract bytes from xmm registers and store them into the buffer
+    push rbx
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+
     ; Top row
-    pextrb byte ptr [rcx], xmm0, 0
-    pextrb byte ptr [rcx + 1], xmm0, 1
-    pextrb byte ptr [rcx + 2], xmm0, 2
+    ;pextrb byte ptr rcx, xmm0, 0
+    ;pextrb byte ptr [rcx + 1], xmm0, 1
+   ; pextrb byte ptr [rcx + 2], xmm0, 2
     
+    pextrb rbx, xmm0, 0
+    pextrb r8, xmm0, 1
+    pextrb r9, xmm0, 2
+
     ; Middle row
-    pextrb byte ptr [rcx + 3], xmm1, 0
-    pextrb byte ptr [rcx + 4], xmm1, 1
-    pextrb byte ptr [rcx + 5], xmm1, 2
+    pextrb r10, xmm1, 0
+    pextrb r11, xmm1, 1
+    pextrb r12, xmm1, 2
     
     ; Bottom row
-    pextrb byte ptr [rcx + 6], xmm2, 0
-    pextrb byte ptr [rcx + 7], xmm2, 1
-    pextrb byte ptr [rcx + 8], xmm2, 2
+    pextrb r13, xmm2, 0
+    pextrb r14, xmm2, 1
+    pextrb r15, xmm2, 2
 
     ; Sort window
     ; Save rbx and rsi for the sorting routine
-    lea r11, [rbp-16]   ; address of the window buffer for sorting
+    ;lea r11, [rbp-16]   ; address of the window buffer for sorting
     
-        ; Pierwsza warstwa
-    compare_swap 0, 3
-    compare_swap 1, 7
-    compare_swap 2, 5
-    compare_swap 4, 8
+    ; First layer
+    compare_swap rbx, r10     ; 0, 3
+    compare_swap r8, r15      ; 1, 7
+    compare_swap r9, r12      ; 2, 5
+    compare_swap r11, r13     ; 4, 8
 
-    ; Druga warstwa
-    compare_swap 0, 7
-    compare_swap 2, 4
-    compare_swap 3, 8
-    compare_swap 5, 6
+    ; Second layer
+    compare_swap rbx, r15     ; 0, 7
+    compare_swap r9, r11      ; 2, 4
+    compare_swap r10, r13     ; 3, 8
+    compare_swap r12, r14     ; 5, 6
 
-    ; Trzecia warstwa
-    compare_swap 0, 2
-    compare_swap 1, 3
-    compare_swap 4, 5
-    compare_swap 7, 8
+    ; Third layer
+    compare_swap rbx, r9      ; 0, 2
+    compare_swap r8, r10      ; 1, 3
+    compare_swap r11, r12     ; 4, 5
+    compare_swap r15, r13     ; 7, 8
 
-    ; Czwarta warstwa
-    compare_swap 1, 4
-    compare_swap 3, 6
-    compare_swap 5, 7
+    ; Fourth layer
+    compare_swap r8, r11      ; 1, 4
+    compare_swap r10, r14     ; 3, 6
+    compare_swap r12, r15     ; 5, 7
 
-    ; Pi¹ta warstwa
-    compare_swap 0, 1
-    compare_swap 2, 4
-    compare_swap 3, 5
-    compare_swap 6, 8
+    ; Fifth layer
+    compare_swap rbx, r8      ; 0, 1
+    compare_swap r9, r11      ; 2, 4
+    compare_swap r10, r12     ; 3, 5
+    compare_swap r14, r13     ; 6, 8
 
-    ; Szósta warstwa
-    compare_swap 2, 3
-    compare_swap 4, 5
-    compare_swap 6, 7
+    ; Sixth layer
+    compare_swap r9, r10      ; 2, 3
+    compare_swap r11, r12     ; 4, 5
+    compare_swap r14, r15     ; 6, 7
 
-    ; Siódma warstwa
-    compare_swap 1, 2
-    compare_swap 3, 4
-    compare_swap 5, 6
+    ; Seventh layer
+    compare_swap r8, r9       ; 1, 2
+    compare_swap r10, r11     ; 3, 4
+    compare_swap r12, r14     ; 5, 6
 
-    movzx rax, byte ptr [r11+4]
-    mov byte ptr[r13], al         ; write median to the output buffer
-        
+    mov rax, r11              ; save median in rax
+
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rbx
+
+    mov byte ptr[r13], al    ; write median to the output buffer
+            
     inc r13             ; increment the output buffer index
     inc esi             ; increment column counter
+    inc rdi             ; increment current pixel in row pointer
 
     jmp inner_loop
 
 end_inner_loop:
-    inc ebx             ; increment row counter
+    inc rbx             ; increment row counter
+    add r12, r9         ; move to the next row
     jmp outer_loop
     
 done:

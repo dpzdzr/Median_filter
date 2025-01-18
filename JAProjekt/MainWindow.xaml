@@ -7,11 +7,11 @@
         mc:Ignorable="d"
         ResizeMode="CanResize"
         Title="Median Filtering" Height="600" Width="900"
+
         WindowStyle="SingleBorderWindow">
     <Window.Resources>
         <local:InverseBoolConverter x:Key="InverseBoolConverter"/>
     </Window.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="3*"/>
@@ -48,7 +48,7 @@
                 <Button Content="Filtruj" Width="150" Height="30" Margin="0,0,0,5"
                         Command="{Binding ProcessBitmapCommand}"
                         IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolConverter}}"/>
-             
+
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation ="Vertical">

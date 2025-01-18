@@ -194,7 +194,6 @@ namespace JAProjekt
 
             try
             {
-                MyStopwatch.Restart();
 
                 IntPtr fragmentsPtr = BitmapInterop.GetProcessedFragments(bitmapPtr, SelectedThreadCount);
 
@@ -208,6 +207,8 @@ namespace JAProjekt
                 }
 
                 ProcessedFragment[] filteredFragments = null;
+                MyStopwatch.Restart();
+
                 if (SelectedDll == "C++")
                 {
                     filteredFragments = await ProcessFragmentsAsync(fragments);
@@ -216,6 +217,7 @@ namespace JAProjekt
                 {
                     filteredFragments = await ProcessFragmentsAsyncASM(fragments);
                 }
+                MyStopwatch.Stop();
 
                 IntPtr convDestinationFilePath = Marshal.StringToHGlobalAnsi(DestinationFilePath);
                 BitmapInterop.MergeFragments(bitmapPtr, filteredFragments, SelectedThreadCount, convDestinationFilePath);
@@ -231,7 +233,6 @@ namespace JAProjekt
                 BitmapInterop.DestroyBitmap(bitmapPtr);
                 //ResetFilePathInfo();
                 IsBusy = false;
-                MyStopwatch.Stop();
                 ExecutionTime = MyStopwatch.ElapsedMilliseconds.ToString() + " ms";
             }
         }
@@ -284,7 +285,7 @@ namespace JAProjekt
 
         public static IntPtr FilterChannelASM(IntPtr channelData, uint width, uint height)
         {
-            int size = (int)(width * height);
+            int size = (int)((width-2) * (height-2));
             IntPtr outputPtr = Marshal.AllocHGlobal(size);
 
             AsmInterop.applyFilter(channelData, outputPtr, width, height);
