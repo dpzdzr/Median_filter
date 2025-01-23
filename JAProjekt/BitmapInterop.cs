@@ -16,11 +16,11 @@ namespace JAProjekt
 
     class BitmapInterop
     {
-        #if DEBUG
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Debug\Bitmap.dll";
-        #else
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Release\Bitmap.dll";
-        #endif
+#if DEBUG
+        private const string DllName = @"..\..\..\..\..\x64\Debug\Bitmap.dll";
+#else
+        private const string DllName = @"..\..\..\..\..\x64\Release\Bitmap.dll";
+#endif
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr CreateBitmap(string fileName);

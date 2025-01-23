@@ -10,9 +10,9 @@ namespace JAProjekt
     class AsmInterop
     {
 #if DEBUG
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Debug\JAAsm.dll";
+        private const string DllName = @"..\..\..\..\..\x64\Debug\JAAsm.dll";
 #else
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Release\JAAsm.dll";
+        private const string DllName = @"..\..\..\..\..\x64\Release\JAAsm.dll";
 #endif
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]

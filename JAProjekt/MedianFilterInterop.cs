@@ -9,11 +9,10 @@ namespace JAProjekt
 {
     class MedianFilterInterop
     {
-
 #if DEBUG
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Debug\MedianFilter.dll";
+        private const string DllName = @"..\..\..\..\..\x64\Debug\MedianFilter.dll";
 #else
-        private const string DllName = @"C:\Users\Daniel\Desktop\ja\japrojekt\x64\Release\MedianFilter.dll";
+        private const string DllName = @"..\..\..\..\..\x64\Release\MedianFilter.dll";
 #endif
 
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
