@@ -1,7 +1,6 @@
 /*
-Median Filter Implementation in C++
-This procedure applies a 3x3 median filter to
-a single RGB channel of the image fragment
+Median Filter Implementation in C++.
+This procedure applies a 3x3 median filter to a single RGB channel of the image fragment.
 Input parameters:
 uint8_t* input - input image pointer
 uint8_t* output - output image pointer

@@ -1,3 +1,10 @@
+/*
+BitmapAPI Definitions in C++
+This header file defines the API for interacting with bitmap images, designed for use in external applications via a dynamic-link library (DLL).
+
+This API facilitates efficient bitmap manipulation and supports integration with external software.
+*/
+
 #ifndef BITMAPAPI_H
 #define BITMAPAPI_H
 

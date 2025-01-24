@@ -1,3 +1,15 @@
+/*
+PixelData Class Definition in C++
+This class encapsulates the pixel data of an image, providing storage for the pixel values, dimensions, bit depth, and padding information.
+It offers member functions to manipulate and access pixel data and metadata.
+Input parameters:
+- std::vector<uint8_t>& data: A vector holding the raw pixel data.
+- uint32_t width: The width of the image in pixels.
+- uint32_t height: The height of the image in pixels.
+- uint16_t bitCount: The bit depth per pixel (e.g., 24).
+- bool hasPadding: Flag indicating whether the image data contains padding bytes.
+*/
+
 #ifndef PIXELDATA_H
 #define PIXELDATA_H
 

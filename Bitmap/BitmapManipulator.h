@@ -1,3 +1,17 @@
+/*
+BitmapManipulator Class Definition in C++
+This class provides functionality for manipulating bitmap images, including adding frames, removing padding, and managing pixel data representations.
+
+Input parameters:
+- PixelData pixelData: The pixel data of the original bitmap image.
+
+Key functionalities:
+- Adds a frame around the bitmap image with customizable borders.
+- Removes padding bytes from the bitmap image for precise data processing.
+- Provides multiple representations of the pixel data (original, without padding, and framed).
+- Includes utility functions for calculating padding and manipulating pixel data for frame generation.
+*/
+
 #ifndef IMAGEMANIPULATOR_H
 #define IMAGEMANIPULATOR_H
 
@@ -22,7 +36,6 @@ public:
     void displayPixelDataFramed() const { pixelDataFramed->displayPixelData(); }
     const PixelData& getPixelData() const { return pixelData; }
     const PixelData& getPixelDataNoPadding() const { return pixelDataNoPadding; }
-    //const PixelData &getPixelDataFramed() const { return *pixelDataFramed; }
     std::shared_ptr<PixelData> getPixelDataFramed() const { return pixelDataFramed; }
 
 private:

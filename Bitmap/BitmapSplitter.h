@@ -1,3 +1,18 @@
+/*
+BitmapSplitter Class Definition in C++
+This class is responsible for splitting a bitmap image into smaller fragments for further processing.
+It utilizes the PixelData class for managing pixel data and supports both raw and processed fragment handling.
+
+Input parameters:
+- std::shared_ptr<PixelData>& pixelDataFramed: A shared pointer to the framed pixel data of the bitmap.
+
+Key functionalities:
+- Splits the bitmap into fragments using a specified number of threads.
+- Separates fragments into individual color channels.
+- Provides access to raw and processed fragments for further operations.
+*/
+
+
 #ifndef BITMAPSPLITTER_H
 #define BITMAPSPLITTER_H
 

@@ -39,10 +39,6 @@ public:
 		return num <= loader.getHeight();
 	}
 
-	// BitmapManipulator getManipulator() const { return manipulator; }
-	// BitmapLoader getLoader() const { return loader; }
-	// BitmapSplitter &getSplitter() { return *splitter; }
-
 private:
 	BitmapLoader loader;
 	BitmapManipulator manipulator;

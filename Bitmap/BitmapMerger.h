@@ -1,3 +1,18 @@
+/*
+BitmapMerger Class Definition in C++
+This class is designed for merging processed bitmap fragments back into a single bitmap image.
+It supports handling pixel data, bitmap headers, and saving the merged image to a file.
+
+Input parameters:
+- PixelData pixelData: The pixel data structure for storing and managing image data.
+- std::vector<uint8_t> headerData: A vector containing the header information of the bitmap.
+
+Key functionalities:
+- Merges multiple processed fragments into the final bitmap image.
+- Copies individual fragments into the appropriate position in the destination bitmap.
+- Saves the merged bitmap image to a specified file path.
+*/
+
 #ifndef BITMAPMERGER_H
 #define BITMAPMERGER_H
 
@@ -21,7 +36,6 @@ private:
 	std::vector<uint8_t> headerData;
 	void copyFragmentToBitmap(const ProcessedFragment& fragment, uint32_t destStartRow);
 	void saveToFile(const char* filePath);
-	//void saveToTxtFile();
 };
 
 #endif

@@ -1,3 +1,18 @@
+/*
+BitmapLoader Class Definition in C++
+This class is responsible for loading bitmap (.bmp) files, extracting header information, and storing pixel data for further processing.
+
+Input parameters:
+- std::string fileName: The name of the bitmap file to be loaded.
+
+Key functionalities:
+- Reads and parses the bitmap file, extracting file and info headers.
+- Loads pixel data from the file into a PixelData structure.
+- Provides access to bitmap metadata (e.g., width, height, bit depth) and pixel data.
+- Displays for debugging purposes.
+*/
+
+
 #ifndef BITMAPLOADER_H
 #define BITMAPLOADER_H
 
